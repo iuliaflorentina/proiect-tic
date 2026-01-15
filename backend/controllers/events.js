@@ -26,7 +26,7 @@ const getEventById  = async (req, res) => {
   }
 }
 
-const addEvent  = async (req, res) => {
+const addEventController  = async (req, res) => {
   try {
     const newEvent = req.body
     const createdEvent = await addEvent(newEvent)
@@ -36,7 +36,7 @@ const addEvent  = async (req, res) => {
   }
 }
 
-const updateEvent  = async (req, res) => {
+const updateEventController  = async (req, res) => {
   try {
     const { id } = req.params
     const eventUpdated = req.body
@@ -48,7 +48,7 @@ const updateEvent  = async (req, res) => {
   }
 }
 
-const deleteEvent  = async (req, res) => {
+const deleteEventController  = async (req, res) => {
   try {
     const { id } = req.params
     const message = await deleteEvent(id)
@@ -62,7 +62,7 @@ const deleteEvent  = async (req, res) => {
 module.exports = {
   getEvents,
   getEventById,
-  addEvent,
-  updateEvent,
-  deleteEvent 
+  addEventController,
+  updateEventController,
+  deleteEventController 
 }

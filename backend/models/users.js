@@ -35,7 +35,7 @@ const updateUser = async (id, userUpdated) => {
     throw new Error("User not found")
   }
 
-  await docRef.update({
+  await snapshot.update({
     ...userUpdated,
   })
 
@@ -54,7 +54,13 @@ const getBoughtTicketsByUser= async (id)=>{
 }
 
 const getExistingUserEmail=async(email)=>{
-    return await usersCollection.where('email',"==",email).limit(1).get()
+    const docUser=await usersCollection.where('email',"==",email).get()
+    const doc=docUser.docs[0]
+    const user={
+      id: doc.id,
+      ...doc.data()
+    }
+    return user
 }
 
 module.exports= {

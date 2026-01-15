@@ -1,11 +1,52 @@
-const { findById, addUser, deleteUser, updateUser, getExistingUserEmail } = require('../models/users')
-const bcrypt = require("bcryptjs")
+const { findById, addUser, deleteUser, updateUser, getExistingUserEmail, getBoughtTicketsByUser } = require('../models/users')
+const bcrypt = require("bcryptjs");
+const { messaging } = require('firebase-admin');
+const jwt=require("jsonwebtoken")
 
+async function comparePasswords(password,hashedPassword){
+    return await bcrypt.compare(password, hashedPassword);
+}
+
+function generateToken(user){
+    const data={
+        userId: user.id,
+        email: user.email
+    }
+
+    return jwt.sign(data,process.env.JWT_SECRET, {expiresIn:process.env.JWT_EXPIRES_IN})
+}
+
+const login= async(req,res)=>{
+    try{
+        const {email, password}=req.body
+        const user = await getExistingUserEmail(email)
+        if(!user){
+            return res.status(404).send("User not found")
+        }
+        console.log(user)
+        const isPasswordValid=await comparePasswords(password,user.password)
+        if(!isPasswordValid){
+            return res.status(401).send("Password is invalid")
+        }
+
+        const token=generateToken(user)
+
+        res.status(200).json({
+            message:"Login successful",
+            token,
+            user
+        })
+
+    }catch(err){
+        res.status(500).send(err.message)
+    }
+}
 
 const getUserById = async (req, res) => {
     try {
         const { id } = req.params
         const user = await findById(id)
+        console.log(user.data())
 
         if (!user.exists) {
             return res.status(404).send("User not found")
@@ -43,15 +84,20 @@ const register = async (req, res) => {
         }
 
         const createdUser = await addUser(newUser);
+
+        const token=generateToken(createdUser)
+
         res.status(201).json({
+            token:token,
             user: createdUser,
+
         })
     } catch (err) {
         res.status(500).send("Failed to create user")
     }
 }
 
-const deleteUser = async (req, res) => {
+const deleteUserController = async (req, res) => {
     try {
         const { id } = req.params
         const message = await deleteUser(id)
@@ -66,7 +112,6 @@ const updateUserData = async (req, res) => {
     try {
         const { id } = req.params
         const userUpdated = req.body
-
         const updatedUser = await updateUser(id, userUpdated)
         res.status(200).json(updatedUser)
     } catch (error) {
@@ -87,9 +132,10 @@ const getBoughtTicketsByUserController = async (req, res) => {
 }
 
 module.exports={
+    login,
     getUserById,
     register,
-    deleteUser,
-    updateUser,
+    deleteUserController,
+    updateUserData,
     getBoughtTicketsByUserController
 }

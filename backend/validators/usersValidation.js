@@ -6,7 +6,7 @@ const userValidator=[
     .withMessage("Your name must have more than 3 characters!"),
 
     body("email")
-    .isEmail
+    .isEmail()
     .withMessage("Invalid email"),
     body("password")
     .isLength({ min: 6 })
@@ -64,4 +64,12 @@ const userValidator=[
     .withMessage("Ticket price must be a number")
 ]
 
-module.exports={userValidator}
+const loginValidator=[
+  body("email")
+  .isEmail()
+  .withMessage("Invalid email!"),
+  body("password")
+  .isLength({ min: 6 })
+  .withMessage("Password must have minimum 6 characters")
+]
+module.exports={userValidator,loginValidator}
