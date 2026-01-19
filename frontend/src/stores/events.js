@@ -117,6 +117,107 @@ export const useEventsStore = defineStore('events', () => {
         }
     }
 
+    async function addEvent(eventData) {
+        isLoading.value = true
+        error.value = null
+        try {
+            const response = await fetch('/events', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': authStore.token
+                },
+                body: JSON.stringify(eventData)
+            })
+
+            if (!response.ok) {
+                const data = await response.json()
+                if (data.errors && Array.isArray(data.errors)) {
+                    const messages = data.errors.map(err => err.msg).join(', ')
+                    throw new Error(messages)
+                }
+                throw new Error(data.message || 'Failed to add event')
+            }
+
+            const newEvent = await response.json()
+            events.value.push(newEvent)
+            return newEvent
+        } catch (err) {
+            error.value = err.message
+            console.error(err)
+            return null
+        } finally {
+            isLoading.value = false
+        }
+    }
+
+    async function updateEvent(id, eventData) {
+        isLoading.value = true
+        error.value = null
+        try {
+            const response = await fetch(`/events/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': authStore.token
+                },
+                body: JSON.stringify(eventData)
+            })
+
+            if (!response.ok) {
+                const data = await response.json()
+                if (data.errors && Array.isArray(data.errors)) {
+                    const messages = data.errors.map(err => err.msg).join(', ')
+                    throw new Error(messages)
+                }
+                throw new Error(data.message || 'Failed to update event')
+            }
+
+            const updatedEvent = await response.json()
+            const index = events.value.findIndex(e => e.id === id)
+            if (index !== -1) {
+                events.value[index] = updatedEvent
+            }
+            if (currentEvent.value && currentEvent.value.id === id) {
+                currentEvent.value = updatedEvent
+            }
+            return updatedEvent
+        } catch (err) {
+            error.value = err.message
+            console.error(err)
+            return null
+        } finally {
+            isLoading.value = false
+        }
+    }
+
+    async function deleteEvent(id) {
+        isLoading.value = true
+        error.value = null
+        try {
+            const response = await fetch(`/events/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': authStore.token
+                }
+            })
+
+            if (!response.ok) {
+                const data = await response.json()
+                throw new Error(data.message || 'Failed to delete event')
+            }
+
+            events.value = events.value.filter(e => e.id !== id)
+            return true
+        } catch (err) {
+            error.value = err.message
+            console.error(err)
+            return false
+        } finally {
+            isLoading.value = false
+        }
+    }
+
     return {
         events,
         currentEvent,
@@ -124,6 +225,9 @@ export const useEventsStore = defineStore('events', () => {
         error,
         fetchEvents,
         fetchEventById,
-        updateEventTickets
+        updateEventTickets,
+        addEvent,
+        updateEvent,
+        deleteEvent
     }
 })

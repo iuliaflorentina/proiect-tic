@@ -3,6 +3,7 @@ import { onMounted, computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useEventsStore } from '../stores/events'
+import OrganizerDashboard from '../components/OrganizerDashboard.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -38,7 +39,10 @@ const confirmLogin = () => {
 </script>
 
 <template>
-  <div class="flex flex-col">
+  <div v-if="authStore.user?.role === 'organizer'">
+    <OrganizerDashboard />
+  </div>
+  <div v-else class="flex flex-col">
     <section class="relative w-full py-20 md:py-32 lg:py-40 bg-background overflow-hidden">
       <div class="absolute inset-0 z-0">
         <div class="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[128px]"></div>
