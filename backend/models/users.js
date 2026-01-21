@@ -66,6 +66,26 @@ const getExistingUserEmail = async (email) => {
   return user
 }
 
+const findBuyersByEvent = async (eventId) => {
+  const snapshot = await usersCollection.get()
+  const buyers = []
+
+  snapshot.forEach(doc => {
+    const userData = doc.data()
+    const relevantTickets = userData.boughtTickets?.filter(ticket => ticket.event.eventId === eventId) || []
+    if (relevantTickets.length > 0) {
+      buyers.push({
+        id: doc.id,
+        name: userData.name,
+        email: userData.email,
+        tickets: relevantTickets
+      })
+    }
+  })
+
+  return buyers
+}
+
 module.exports = {
   findUsers,
   findById,
@@ -73,5 +93,6 @@ module.exports = {
   deleteUser,
   updateUser,
   getBoughtTicketsByUser,
-  getExistingUserEmail
+  getExistingUserEmail,
+  findBuyersByEvent
 }

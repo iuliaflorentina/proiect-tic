@@ -1,4 +1,4 @@
-const { findById, addUser, deleteUser, updateUser, getExistingUserEmail, getBoughtTicketsByUser } = require('../models/users')
+const { findById, addUser, deleteUser, updateUser, getExistingUserEmail, getBoughtTicketsByUser, findBuyersByEvent } = require('../models/users')
 const bcrypt = require("bcryptjs");
 const { messaging } = require('firebase-admin');
 const jwt = require("jsonwebtoken")
@@ -131,11 +131,23 @@ const getBoughtTicketsByUserController = async (req, res) => {
     }
 }
 
+const getBuyersByEventController = async (req, res) => {
+    try {
+        const { eventId } = req.params
+        const buyers = await findBuyersByEvent(eventId)
+        res.status(200).json({ buyers })
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ message: "Failed to fetch buyers" })
+    }
+}
+
 module.exports = {
     login,
     getUserById,
     register,
     deleteUserController,
     updateUserData,
-    getBoughtTicketsByUserController
+    getBoughtTicketsByUserController,
+    getBuyersByEventController
 }
