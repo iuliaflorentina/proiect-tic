@@ -29,6 +29,11 @@ const router = createRouter({
       name: 'event-details',
       component: () => import('../views/EventDetailsView.vue'),
     },
+    {
+      path: '/organizer/buyers/:eventId',
+      name: 'buyers-evidence',
+      component: () => import('../views/BuyersEvidenceView.vue'),
+    },
   ],
 })
 

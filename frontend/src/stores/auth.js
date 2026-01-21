@@ -10,7 +10,38 @@ export const useAuthStore = defineStore('auth', () => {
 
     const router = useRouter()
 
-    const isAuthenticated = computed(() => !!token.value)
+    const isAuthenticated = computed(() => {
+        if (!token.value) return false
+        return !isTokenExpired(token.value)
+    })
+
+    function isTokenExpired(token) {
+        if (!token) return true
+        try {
+            const base64Url = token.split('.')[1]
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+            }).join(''))
+
+            const { exp } = JSON.parse(jsonPayload)
+            if (!exp) return false
+
+            const currentTime = Math.floor(Date.now() / 1000)
+            return exp < currentTime
+        } catch (e) {
+            console.error('Error decoding token:', e)
+            return true
+        }
+    }
+
+    // Startup check
+    if (token.value && isTokenExpired(token.value)) {
+        user.value = null
+        token.value = null
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+    }
 
     async function login(email, password) {
         isLoading.value = true
@@ -92,10 +123,17 @@ export const useAuthStore = defineStore('auth', () => {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': token.value
+                    'Authorization': `Bearer ${token.value}`
                 },
                 body: JSON.stringify(updatedData)
             })
+
+            if (response.status === 401 || response.status === 403) {
+                alert('Session expired. Please login again.')
+                logout()
+                router.push('/login')
+                return false
+            }
 
             const data = await response.json()
 
@@ -126,9 +164,16 @@ export const useAuthStore = defineStore('auth', () => {
             const response = await fetch(`/users/${user.value.id}`, {
                 method: 'DELETE',
                 headers: {
-                    'Authorization': token.value
+                    'Authorization': `Bearer ${token.value}`
                 }
             })
+
+            if (response.status === 401 || response.status === 403) {
+                alert('Session expired. Please login again.')
+                logout()
+                router.push('/login')
+                return false
+            }
 
             if (!response.ok) {
                 const data = await response.json()
@@ -153,9 +198,16 @@ export const useAuthStore = defineStore('auth', () => {
         try {
             const response = await fetch(`/users/boughtTickets/${user.value.id}`, {
                 headers: {
-                    'Authorization': token.value
+                    'Authorization': `Bearer ${token.value}`
                 }
             })
+
+            if (response.status === 401 || response.status === 403) {
+                alert('Session expired. Please login again.')
+                logout()
+                router.push('/login')
+                return
+            }
 
             if (!response.ok) throw new Error('Failed to fetch tickets')
 
@@ -195,10 +247,17 @@ export const useAuthStore = defineStore('auth', () => {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': token.value
+                    'Authorization': `Bearer ${token.value}`
                 },
                 body: JSON.stringify({ boughtTickets: updatedTickets })
             })
+
+            if (response.status === 401 || response.status === 403) {
+                alert('Session expired. Please login again.')
+                logout()
+                router.push('/login')
+                return false
+            }
 
             if (!response.ok) {
                 const data = await response.json()
@@ -248,10 +307,17 @@ export const useAuthStore = defineStore('auth', () => {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': token.value
+                    'Authorization': `Bearer ${token.value}`
                 },
                 body: JSON.stringify({ boughtTickets: updatedTickets })
             })
+
+            if (response.status === 401 || response.status === 403) {
+                alert('Session expired. Please login again.')
+                logout()
+                router.push('/login')
+                return false
+            }
 
             if (!response.ok) {
                 const data = await response.json()
@@ -272,6 +338,36 @@ export const useAuthStore = defineStore('auth', () => {
         }
     }
 
+    async function fetchBuyersByEvent(eventId) {
+        isLoading.value = true
+        error.value = null
+        try {
+            const response = await fetch(`/users/eventBuyers/${eventId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token.value}`
+                }
+            })
+
+            if (response.status === 401 || response.status === 403) {
+                alert('Session expired. Please login again.')
+                logout()
+                router.push('/login')
+                return []
+            }
+
+            if (!response.ok) throw new Error('Failed to fetch buyers')
+
+            const data = await response.json()
+            return data.buyers || []
+        } catch (err) {
+            console.error(err)
+            error.value = err.message
+            return []
+        } finally {
+            isLoading.value = false
+        }
+    }
+
     return {
         user,
         token,
@@ -286,6 +382,7 @@ export const useAuthStore = defineStore('auth', () => {
         boughtTickets,
         fetchBoughtTickets,
         buyTicket,
-        buyTickets
+        buyTickets,
+        fetchBuyersByEvent
     }
 })

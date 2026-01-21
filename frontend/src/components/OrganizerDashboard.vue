@@ -1,7 +1,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useEventsStore } from '../stores/events'
 import { useAuthStore } from '../stores/auth'
+
+const router = useRouter()
 
 const eventsStore = useEventsStore()
 const authStore = useAuthStore()
@@ -147,14 +150,26 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="p-4 border-t border-border flex gap-3">
-          <button @click="openEditModal(event)"
-            class="flex-1 py-2 text-sm font-medium border border-border rounded-md hover:bg-white/5 transition-colors">
-            Edit
-          </button>
-          <button @click="handleDelete(event.id)"
-            class="flex-1 py-2 text-sm font-medium text-red-400 border border-red-400/20 rounded-md hover:bg-red-400/10 transition-colors">
-            Delete
+        <div class="px-4 pb-4 flex flex-col gap-2">
+          <div class="flex gap-2">
+            <button @click="openEditModal(event)"
+              class="flex-1 py-2 text-sm font-medium border border-border rounded-md hover:bg-white/5 transition-colors">
+              Edit
+            </button>
+            <button @click="handleDelete(event.id)"
+              class="flex-1 py-2 text-sm font-medium text-red-400 border border-red-400/20 rounded-md hover:bg-red-400/10 transition-colors">
+              Delete
+            </button>
+          </div>
+          <button @click="$router.push(`/organizer/buyers/${event.id}`)"
+            class="w-full py-2 text-sm font-medium bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 transition-colors flex items-center justify-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            View Buyers Evidence
           </button>
         </div>
       </div>

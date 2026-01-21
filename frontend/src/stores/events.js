@@ -15,16 +15,18 @@ export const useEventsStore = defineStore('events', () => {
         try {
             const headers = {}
             if (authStore.token) {
-                headers['Authorization'] = authStore.token
+                headers['Authorization'] = `Bearer ${authStore.token}`
             }
 
             const response = await fetch('/events', { headers })
 
+            if (response.status === 401 || response.status === 403) {
+                alert('Session expired. Please login again.')
+                authStore.logout()
+                return []
+            }
+
             if (!response.ok) {
-                if (response.status === 401 || response.status === 403) {
-                    // Silent fail or specific error for unauthenticated
-                    return []
-                }
                 throw new Error('Failed to fetch events')
             }
 
@@ -44,10 +46,16 @@ export const useEventsStore = defineStore('events', () => {
         try {
             const headers = {}
             if (authStore.token) {
-                headers['Authorization'] = authStore.token
+                headers['Authorization'] = `Bearer ${authStore.token}`
             }
 
             const response = await fetch(`/events/${id}`, { headers })
+
+            if (response.status === 401 || response.status === 403) {
+                alert('Session expired. Please login again.')
+                authStore.logout()
+                return null
+            }
 
             if (!response.ok) {
                 throw new Error('Failed to fetch event')
@@ -68,15 +76,12 @@ export const useEventsStore = defineStore('events', () => {
     async function updateEventTickets(eventId, ticketsPurchased) {
         error.value = null
         try {
-            // First, fetch the current event to get latest ticket quantities
             const event = await fetchEventById(eventId)
             if (!event || !event.tickets) {
                 throw new Error('Event not found or has no tickets')
             }
 
-            // Calculate new quantities
             const updatedTickets = event.tickets.map(ticket => {
-                // Find matching purchased tickets
                 const purchased = ticketsPurchased.find(p =>
                     p.type.toLowerCase() === ticket.type.toLowerCase()
                 )
@@ -92,24 +97,27 @@ export const useEventsStore = defineStore('events', () => {
                 return ticket
             })
 
-            // Update the event with new ticket quantities
             const response = await fetch(`/events/${eventId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': authStore.token
+                    'Authorization': `Bearer ${authStore.token}`
                 },
                 body: JSON.stringify({ tickets: updatedTickets })
             })
+
+            if (response.status === 401 || response.status === 403) {
+                alert('Session expired. Please login again.')
+                authStore.logout()
+                return false
+            }
 
             if (!response.ok) {
                 const data = await response.json()
                 throw new Error(data.message || 'Failed to update event tickets')
             }
 
-            // Update local state
             currentEvent.value = { ...event, tickets: updatedTickets }
-
             return true
         } catch (err) {
             error.value = err.message
@@ -125,10 +133,16 @@ export const useEventsStore = defineStore('events', () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': authStore.token
+                    'Authorization': `Bearer ${authStore.token}`
                 },
                 body: JSON.stringify(eventData)
             })
+
+            if (response.status === 401 || response.status === 403) {
+                alert('Session expired. Please login again.')
+                authStore.logout()
+                return null
+            }
 
             if (!response.ok) {
                 const data = await response.json()
@@ -159,10 +173,16 @@ export const useEventsStore = defineStore('events', () => {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': authStore.token
+                    'Authorization': `Bearer ${authStore.token}`
                 },
                 body: JSON.stringify(eventData)
             })
+
+            if (response.status === 401 || response.status === 403) {
+                alert('Session expired. Please login again.')
+                authStore.logout()
+                return null
+            }
 
             if (!response.ok) {
                 const data = await response.json()
@@ -198,9 +218,15 @@ export const useEventsStore = defineStore('events', () => {
             const response = await fetch(`/events/${id}`, {
                 method: 'DELETE',
                 headers: {
-                    'Authorization': authStore.token
+                    'Authorization': `Bearer ${authStore.token}`
                 }
             })
+
+            if (response.status === 401 || response.status === 403) {
+                alert('Session expired. Please login again.')
+                authStore.logout()
+                return false
+            }
 
             if (!response.ok) {
                 const data = await response.json()
