@@ -1,144 +1,218 @@
 <template>
-    <div class="container mx-auto px-4 py-8">
-        <div v-if="eventsStore.isLoading && !event" class="text-center py-12">
-            <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-            <p class="mt-4 text-gray-400 text-lg">Loading event details...</p>
-        </div>
+    <div class="w-full flex justify-center py-12">
+        <div class="w-full max-w-7xl px-4 md:px-6">
+            <div v-if="eventsStore.isLoading && !event" class="text-center py-12">
+                <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary">
+                </div>
+                <p class="mt-4 text-gray-400 text-lg">Loading event details...</p>
+            </div>
 
-        <div v-else-if="event" class="max-w-6xl mx-auto">
-            <button @click="router.back()"
-                class="mb-6 flex items-center text-gray-400 hover:text-white transition-colors">
-                <span class="mr-2">←</span> Back to Events
-            </button>
-
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="lg:col-span-2 space-y-8">
-                    <div class="h-64 md:h-96 w-full bg-gray-800 rounded-xl overflow-hidden relative shadow-2xl">
-                        <img v-if="event.imageUrl" :src="event.imageUrl" :alt="event.title"
-                            class="w-full h-full object-cover">
-                        <div v-else class="w-full h-full flex items-center justify-center bg-gray-800 text-gray-600">
-                            <span class="text-6xl">🎉</span>
-                        </div>
-                    </div>
-
-                    <div class="bg-card rounded-xl p-8 border border-border">
-                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                            <h1 class="text-3xl md:text-4xl font-bold text-white">{{ event.title }}</h1>
-                            <span
-                                class="inline-flex items-center justify-center px-4 py-2 rounded-full bg-primary/20 text-primary font-bold">
-                                ${{ minPrice || 'Free' }}
-                            </span>
-                        </div>
-
-                        <div class="space-y-4 text-gray-300">
-                            <div class="flex items-center gap-3">
-                                <span class="text-xl">📅</span>
-                                <span class="text-lg">{{ event.date ? new Date(event.date).toLocaleDateString() : 'DateTBA' }}</span>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <span class="text-xl">📍</span>
-                                <span class="text-lg">
-                                    {{ event.location.name }}, {{ event.location.address }}, {{ event.location.city }}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="mt-8">
-                            <h2 class="text-2xl font-bold text-white mb-4">About this Event</h2>
-                            <p class="text-gray-300 leading-relaxed whitespace-pre-wrap">{{ event.description }}</p>
-                        </div>
-                    </div>
+            <div v-else-if="event" class="flex flex-col space-y-12">
+                <div>
+                    <button @click="router.back()"
+                        class="flex items-center text-gray-400 hover:text-purple-light transition-all hover:scale-105 cursor-pointer">
+                        <span class="mr-2">←</span> Back to Events
+                    </button>
                 </div>
 
-                <div class="lg:col-span-1">
-                    <div class="bg-card rounded-xl p-6 border border-border sticky top-8 shadow-xl">
-                        <h2 class="text-xl font-bold text-white mb-6">Get Tickets</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                    <div class="lg:col-span-2 space-y-10">
+                        <div class="aspect-video md:h-[400px] w-full rounded-2xl overflow-hidden relative shadow-2xl transition-all duration-500"
+                            :class="getCardGradient(0)">
 
-                        <form @submit.prevent="handlePurchase" class="space-y-6">
-                            <div v-if="availableTickets.length > 0">
-                                <label class="block text-sm font-medium text-gray-400 mb-2">Select Tickets</label>
-                                <div class="space-y-3">
+                            <img v-if="event.imageUrl" :src="event.imageUrl" :alt="event.title"
+                                class="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-40">
+
+                            <div class="absolute inset-0 opacity-20">
+                                <svg class="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                                    <defs>
+                                        <pattern id="detailGrid" width="10" height="10" patternUnits="userSpaceOnUse">
+                                            <path d="M 10 0 L 0 0 0 10" fill="none" stroke="currentColor"
+                                                stroke-width="0.5" />
+                                        </pattern>
+                                    </defs>
+                                    <rect width="100" height="100" fill="url(#detailGrid)" />
+                                </svg>
+                            </div>
+
+                            <div class="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-white/20 blur-[80px]">
+                            </div>
+                            <div class="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-white/20 blur-[60px]">
+                            </div>
+
+                            <div class="absolute inset-0 overflow-hidden opacity-30">
+                                <div
+                                    class="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-transparent via-white to-transparent">
+                                </div>
+                                <div
+                                    class="absolute top-0 right-1/3 w-px h-full bg-gradient-to-b from-transparent via-white to-transparent">
+                                </div>
+                            </div>
+
+                            <div
+                                class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 z-10">
+                                <span
+                                    class="block text-sm font-semibold tracking-[0.3em] uppercase opacity-90 mb-4 text-white drop-shadow-md">
+                                    {{ event.location?.city || 'Online' }}
+                                </span>
+                                <h1
+                                    class="text-4xl md:text-6xl font-black tracking-tight leading-tight text-white drop-shadow-2xl">
+                                    {{ event.name || event.title }}
+                                </h1>
+                            </div>
+
+                            <div
+                                class="absolute top-6 right-6 bg-background/60 backdrop-blur-xl px-5 py-2 rounded-2xl text-xs font-black uppercase tracking-widest border border-white/20 text-white shadow-2xl">
+                                {{ event.date ? new Date(event.date).toLocaleDateString(undefined, {
+                                    day: 'numeric',
+                                    month: 'short', year: 'numeric'
+                                }) : 'TBA' }}
+                            </div>
+                        </div>
+
+                        <div class="bg-card/40 backdrop-blur-xl rounded-2xl p-8 border border-border/50 shadow-xl">
+                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 py-3">
+                                <h2 class="text-3xl font-bold text-white tracking-tight">Experience Decoded</h2>
+                                <span
+                                    class="inline-flex items-center justify-center px-6 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary font-black text-lg">
+                                    Starting at ${{ minPrice || 'Free' }}
+                                </span>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-300">
+                                <div class="flex items-center gap-4 bg-white/5 p-4 rounded-xl border border-white/5">
+                                    <span class="text-2xl">📅</span>
+                                    <div class="flex flex-col">
+                                        <span
+                                            class="text-xs uppercase tracking-widest text-muted-foreground font-bold">Event
+                                            Date</span>
+                                        <span class="text-lg font-medium">{{ event.date ? new
+                                            Date(event.date).toLocaleDateString() : 'Date TBA' }}</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-4 bg-white/5 p-4 rounded-xl border border-white/5">
+                                    <span class="text-2xl">📍</span>
+                                    <div class="flex flex-col">
+                                        <span
+                                            class="text-xs uppercase tracking-widest text-muted-foreground font-bold">Location</span>
+                                        <span class="text-lg font-medium">
+                                            {{ event.location.name }}, {{ event.location.city }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-10">
+                                <h3 class="text-xl font-bold text-white border-b border-border/50 py-5">About this
+                                    Event</h3>
+                                <p class="text-gray-400 leading-relaxed whitespace-pre-wrap text-lg py-5">{{
+                                    event.description }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-1">
+                        <div
+                            class="bg-card/40 backdrop-blur-xl rounded-2xl p-8 border border-border/50 sticky top-8 shadow-2xl">
+                            <h2 class="text-2xl font-black text-white mb-8 tracking-tight">Secure Your Entry</h2>
+
+                            <form @submit.prevent="handlePurchase">
+                                <div v-if="availableTickets.length > 0" class="p-5 flex flex-col gap-4">
                                     <div v-for="(ticket, index) in availableTickets" :key="index"
-                                        class="p-3 rounded-lg border bg-gray-700/50 border-gray-600">
-                                        <div class="flex justify-between items-center mb-2">
-                                            <div>
-                                                <span class="text-white font-medium">{{ ticket.type || 'Standard Ticket'
-                                                }}</span>
-                                                <span class="text-white font-bold ml-3">${{ ticket.price || 0 }}</span>
+                                        class="p-4 rounded-xl border bg-white/5 border-white/10 group transition-all hover:bg-white/10">
+                                        <div class="flex justify-between items-center">
+                                            <div class="flex flex-col">
+                                                <span
+                                                    class="text-white font-bold text-lg group-hover:text-purple-light transition-colors">{{
+                                                        ticket.type || 'Standard' }}</span>
                                             </div>
+                                            <span class="text-white font-black text-xl">${{ ticket.price || 0 }}</span>
                                         </div>
                                         <div
-                                            class="flex items-center rounded-md border border-gray-600 bg-gray-800/50 overflow-hidden">
+                                            class="flex items-center rounded-lg border border-border/50 bg-black/40 overflow-hidden">
                                             <button type="button" @click="decrementTicket(ticket.originalIndex)"
-                                                class="px-3 py-1 hover:bg-gray-600 text-white transition-colors text-sm">-</button>
+                                                class="px-4 py-2 hover:bg-primary hover:text-white transition-all text-white font-bold cursor-pointer">-</button>
                                             <input v-model.number="ticketQuantities[ticket.originalIndex]" type="number"
                                                 min="0" :max="ticket.displayAvailable"
-                                                class="w-full bg-transparent text-center text-white focus:outline-none py-1 text-sm"
+                                                class="w-full bg-transparent text-center text-white focus:outline-none py-2 font-bold"
                                                 @input="validateQuantity(ticket.originalIndex, ticket.displayAvailable)" />
                                             <button type="button"
                                                 @click="incrementTicket(ticket.originalIndex, ticket.displayAvailable)"
-                                                class="px-3 py-1 hover:bg-gray-600 text-white transition-colors text-sm">+</button>
+                                                class="px-4 py-2 hover:bg-primary hover:text-white transition-all text-white font-bold cursor-pointer">+</button>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div v-else
-                                class="p-4 bg-red-900/20 border border-red-800 text-red-400 rounded-md text-sm text-center">
-                                <p class="font-semibold">All tickets sold out!</p>
-                                <p class="text-xs mt-1">This event is no longer available for purchase.</p>
-                            </div>
+                                <div v-else
+                                    class="p-6 bg-red-500/10 border border-red-500/20 text-red-400 rounded-2xl text-center">
+                                    <p class="font-black text-lg">SOLD OUT</p>
+                                    <p class="text-sm opacity-80 mt-1 text-muted-foreground">Catch the next wave.</p>
+                                </div>
 
-                            <div class="border-t border-gray-700 pt-4 mt-6">
-                                <div class="space-y-2 mb-4">
-                                    <div v-for="(ticket, index) in availableTickets" :key="index">
-                                        <div v-if="ticketQuantities[ticket.originalIndex] > 0"
-                                            class="flex justify-between text-sm text-gray-300">
-                                            <span>{{ ticket.type }} × {{ ticketQuantities[ticket.originalIndex]
-                                                }}</span>
-                                            <span>${{ (ticket.price * ticketQuantities[ticket.originalIndex]).toFixed(2)
-                                                }}</span>
+                                <div class="border-t border-border/50 pt-6 mt-8">
+                                    <div class="space-y-3 mb-6">
+                                        <div v-for="(ticket, index) in availableTickets" :key="index">
+                                            <div v-if="ticketQuantities[ticket.originalIndex] > 0"
+                                                class="flex justify-between text-sm">
+                                                <span class="text-gray-400">{{ ticket.type }} × {{
+                                                    ticketQuantities[ticket.originalIndex] }}</span>
+                                                <span class="text-white font-bold">${{ (ticket.price *
+                                                    ticketQuantities[ticket.originalIndex]).toFixed(2) }}</span>
+                                            </div>
                                         </div>
                                     </div>
+
+                                    <div class="flex justify-between items-center text-xl font-black text-white mb-8">
+                                        <span>Total</span>
+                                        <span class="text-purple-light">${{ total }}</span>
+                                    </div>
+
+                                    <div v-if="successMessage"
+                                        class="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-xl text-green-400 text-sm text-center animate-in zoom-in-95 font-bold">
+                                        {{ successMessage }}
+                                    </div>
+
+                                    <div v-if="authStore.error"
+                                        class="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm text-center animate-in slide-in-from-top-2 font-bold">
+                                        {{ authStore.error }}
+                                    </div>
+
+                                    <button type="submit"
+                                        :disabled="authStore.isLoading || isSuccess || totalQuantity === 0"
+                                        class="group relative w-full py-4 px-6 bg-primary cursor-pointer overflow-hidden rounded-xl shadow-2xl transition-all hover:scale-[1.03] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <div
+                                            class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer">
+                                        </div>
+                                        <div
+                                            class="relative flex items-center justify-center text-primary-foreground font-black text-lg">
+                                            <span v-if="authStore.isLoading" class="flex items-center gap-2">
+                                                <svg class="animate-spin h-5 w-5 text-current" viewBox="0 0 24 24">
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10"
+                                                        stroke="currentColor" stroke-width="4" fill="none"></circle>
+                                                    <path class="opacity-75" fill="currentColor"
+                                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                                    </path>
+                                                </svg>
+                                                Securing...
+                                            </span>
+                                            <span v-else-if="isSuccess" class="text-neon">Reserved! 🎟️</span>
+                                            <span v-else class="group-hover:text-neon transition-colors duration-300">
+                                                Confirm Purchase ({{ totalQuantity }})
+                                            </span>
+                                        </div>
+                                    </button>
                                 </div>
-
-                                <div
-                                    class="flex justify-between items-center text-lg font-bold text-white mb-6 border-t border-gray-700 pt-2">
-                                    <span>Total</span>
-                                    <span>${{ total }}</span>
-                                </div>
-
-                                <div v-if="successMessage"
-                                    class="mb-4 p-3 bg-green-900/30 border border-green-800 rounded-md text-green-400 text-sm text-center">
-                                    {{ successMessage }}
-                                </div>
-
-                                <div v-if="authStore.error"
-                                    class="mb-4 p-3 bg-red-900/30 border border-red-800 rounded-md text-red-400 text-sm text-center">
-                                    {{ authStore.error }}
-                                </div>
-
-                                <button type="submit"
-                                    :disabled="authStore.isLoading || isSuccess || totalQuantity === 0"
-                                    class="w-full py-3 px-4 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-md shadow-lg transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
-                                    <span v-if="authStore.isLoading">Processing...</span>
-                                    <span v-else-if="isSuccess">Purchased! 🎟️</span>
-                                    <span v-else>Confirm Purchase ({{ totalQuantity }} ticket{{ totalQuantity !== 1 ?
-                                        's' : '' }})</span>
-                                </button>
-                            </div>
-                        </form>
-
-                        <p class="mt-4 text-xs text-center text-gray-500">
-                            Secure payment processing. By clicking "Confirm Purchase" you agree to our Terms of Service.
-                        </p>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div v-else class="text-center py-20 text-gray-400">
-            <p class="text-xl mb-4">Event not found.</p>
-            <button @click="router.push('/')" class="text-primary hover:underline">Return Home</button>
+            <div v-else class="text-center py-20">
+                <p class="text-3xl font-bold mb-6 text-white text-neon">Event not found.</p>
+                <button @click="router.push('/')"
+                    class="px-8 py-3 bg-white/5 rounded-xl border border-white/10 text-primary font-bold hover:bg-white/10 transition-all">Return
+                    to Mission Control</button>
+            </div>
         </div>
     </div>
 </template>
@@ -159,6 +233,18 @@ const isSuccess = ref(false)
 const successMessage = ref('')
 
 const event = computed(() => eventsStore.currentEvent)
+
+const getCardGradient = (index) => {
+    const gradients = [
+        'bg-gradient-to-br from-blue via-purple to-blue-light',
+        'bg-gradient-to-br from-purple via-blue to-blue-light',
+        'bg-gradient-to-br from-blue-light via-blue to-purple',
+        'bg-gradient-to-br from-purple via-blue-light to-blue',
+        'bg-gradient-to-br from-blue via-blue-light to-purple',
+        'bg-gradient-to-br from-blue-light via-purple to-blue'
+    ]
+    return gradients[index % gradients.length]
+}
 
 const availableTickets = computed(() => {
     if (!event.value?.tickets) return []
@@ -236,7 +322,7 @@ async function handlePurchase() {
                 ticketId: `${event.value.id}-${ticket.type}-${Date.now()}`,
                 event: {
                     eventId: event.value.id,
-                    name: event.value.name,
+                    name: event.value.name || event.value.title,
                     date: event.value.date,
                     adress: event.value.location?.address || event.value.location?.city || 'Online'
                 },

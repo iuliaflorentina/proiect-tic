@@ -1,65 +1,100 @@
 <template>
-  <div class="min-h-screen bg-[#0f172a] text-white p-8">
-    <div class="max-w-6xl mx-auto">
-      <div class="flex items-center justify-between mb-8">
-        <div>
-          <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-            Buyers Evidence
-          </h1>
-          <p class="text-slate-400 mt-2">View all attendees for this event</p>
+  <div class="relative w-full flex justify-center py-12 min-h-screen bg-background overflow-x-hidden">
+
+    <div class="fixed inset-0 z-0 opacity-20 pointer-events-none">
+      <svg class="h-full w-full" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="buyersDotPattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+            <circle cx="2" cy="2" r="1" fill="currentColor" class="text-blue-light" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#buyersDotPattern)" />
+      </svg>
+    </div>
+
+    <div class="fixed -top-32 -left-32 w-80 h-80 bg-purple/20 rounded-full blur-[120px] pointer-events-none z-0"></div>
+    <div class="fixed -bottom-32 -right-32 w-96 h-96 bg-blue/15 rounded-full blur-[140px] pointer-events-none z-0">
+    </div>
+
+    <div class="relative z-10 w-full max-w-7xl px-4 md:px-6">
+      <div
+        class="bg-card/40 backdrop-blur-xl rounded-3xl border border-border/50 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-500">
+
+        <div
+          class="px-8 pt-10 pb-6 md:px-12 md:pt-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+          <div class="space-y-2">
+            <h1 class="text-4xl md:text-5xl font-black text-white tracking-tighter leading-none">
+              Buyers <span class="text-primary">Evidence</span>
+            </h1>
+          </div>
+
+          <button @click="$router.back()"
+            class="group relative inline-flex h-12 items-center justify-center overflow-hidden rounded-xl bg-white/5 px-8 text-xs font-black text-white border border-white/10 shadow-xl transition-all hover:scale-105 active:scale-95 cursor-pointer">
+            <div
+              class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:animate-shimmer">
+            </div>
+            <span class="relative flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+              Returns
+            </span>
+          </button>
         </div>
-        <button 
-          @click="$router.back()"
-          class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors flex items-center gap-2"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          Back to Dashboard
-        </button>
-      </div>
 
-      <div v-if="isLoading" class="flex justify-center items-center py-20">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-      </div>
+        <div class="p-8 md:p-12">
+          <div v-if="isLoading" class="flex flex-col items-center justify-center py-20 space-y-4">
+            <div class="inline-block animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
+            <p class="text-gray-400 font-black uppercase tracking-widest text-xs">Decrypting Attendee List...</p>
+          </div>
 
-      <div v-else-if="buyers.length === 0" class="bg-slate-800/50 rounded-2xl p-12 text-center border border-slate-700">
-        <div class="bg-slate-700/50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-          </svg>
+          <div v-else-if="buyers.length === 0"
+            class="bg-black/20 border border-dashed border-border/50 rounded-2xl p-20 text-center animate-in fade-in duration-700">
+            <div class="text-6xl mb-6 opacity-30">👥</div>
+            <h3 class="text-2xl font-black text-white mb-4 uppercase tracking-tight">Zero Presence Detected</h3>
+            <p class="text-gray-400 font-medium">No one has secured their units for this mission yet.</p>
+          </div>
+
+          <div v-else class="overflow-x-auto rounded-2xl border border-white/5 bg-black/20">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="border-b border-white/10 bg-white/5">
+                  <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.3em] text-purple-light">Identity
+                  </th>
+                  <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.3em] text-purple-light">Email</th>
+                  <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.3em] text-purple-light text-center">
+                    Ticket Type</th>
+                  <th class="px-8 py-5 text-[10px] font-black uppercase tracking-[0.3em] text-purple-light text-right">
+                    Quantity</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/5">
+                <template v-for="buyer in buyers" :key="buyer.id">
+                  <tr v-for="(ticket, index) in buyer.tickets" :key="buyer.id + '-' + index"
+                    class="group hover:bg-white/5 transition-colors">
+                    <td class="px-8 py-6">
+                      <div class="font-black text-white text-lg tracking-tight group-hover:text-neon transition-colors">
+                        {{ buyer.name }}</div>
+                    </td>
+                    <td class="px-8 py-6">
+                      <div class="text-gray-400 font-bold text-sm tracking-wide">{{ buyer.email }}</div>
+                    </td>
+                    <td class="px-8 py-6 text-center">
+                      <span
+                        class="inline-flex items-center px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-primary/10 text-primary border border-primary/20 bg-opacity-50">
+                        {{ ticket.type }}
+                      </span>
+                    </td>
+                    <td class="px-8 py-6 text-right">
+                      <span class="text-xl font-black text-white drop-shadow-sm">{{ ticket.quantity }}</span>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
         </div>
-        <h3 class="text-xl font-semibold mb-2">No buyers found</h3>
-        <p class="text-slate-400">No one has purchased tickets for this event yet.</p>
-      </div>
-
-      <div v-else class="overflow-x-auto bg-slate-800/50 rounded-2xl border border-slate-700 shadow-xl backdrop-blur-sm">
-        <table class="w-full text-left border-collapse">
-          <thead>
-            <tr class="border-b border-slate-700 bg-slate-800/80">
-              <th class="px-6 py-4 font-semibold text-slate-300">Name</th>
-              <th class="px-6 py-4 font-semibold text-slate-300">Email</th>
-              <th class="px-6 py-4 font-semibold text-slate-300">Ticket Type</th>
-              <th class="px-6 py-4 font-semibold text-slate-300">Quantity</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-700/50">
-            <template v-for="buyer in buyers" :key="buyer.id">
-              <tr v-for="(ticket, index) in buyer.tickets" :key="buyer.id + '-' + index" class="hover:bg-slate-700/30 transition-colors">
-                <td class="px-6 py-4">
-                  <div class="font-medium text-slate-100">{{ buyer.name }}</div>
-                </td>
-                <td class="px-6 py-4 text-slate-400">{{ buyer.email }}</td>
-                <td class="px-6 py-4">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase">
-                    {{ ticket.type }}
-                  </span>
-                </td>
-                <td class="px-6 py-4 font-semibold text-slate-200">{{ ticket.quantity }}</td>
-              </tr>
-            </template>
-          </tbody>
-        </table>
       </div>
     </div>
   </div>
@@ -83,7 +118,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.bg-clip-text {
-  -webkit-background-clip: text;
+.shadow-3xl {
+  box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.5);
 }
 </style>

@@ -12,5 +12,4 @@ import Navbar from './components/layout/Navbar.vue'
   </div>
 </template>
 
-<style>
-</style>
+<style></style>
