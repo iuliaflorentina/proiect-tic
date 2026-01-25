@@ -9,7 +9,7 @@ const { validateToken } = require('../middlewares/auth')
 router.post("/", validateToken, eventValidator, validate, eventsController.addEventController)
 router.delete("/:id", validateToken, eventsController.deleteEventController)
 router.put("/:id", validateToken, eventsController.updateEventController)
-router.get("/:id", eventsController.getEventById)
+router.get("/:id", validateToken, eventsController.getEventById)
 router.get("/", eventsController.getEvents)
 
 module.exports = router
