@@ -9,7 +9,18 @@ const router = useRouter()
 const authStore = useAuthStore()
 const eventsStore = useEventsStore()
 
-const events = computed(() => eventsStore.events)
+const events = computed(() => {
+  const allEvents = eventsStore.events
+  const query = eventsStore.searchQuery
+  
+  if (!query.trim()) {
+    return allEvents
+  }
+  
+  return allEvents.filter(event =>
+    event.name.toLowerCase().includes(query.toLowerCase())
+  )
+})
 const isLoading = computed(() => eventsStore.isLoading)
 const getMinPrice = (event) => {
   if (!event.tickets || event.tickets.length === 0) return event.price || 0
@@ -120,7 +131,9 @@ const getCardGradient = (index) => {
         </div>
 
         <div v-else-if="events.length === 0" class="text-center py-12">
-          <p class="text-xl text-gray-400">No upcoming events found.</p>
+          <p class="text-xl text-gray-400">
+            {{ eventsStore.searchQuery ? 'No events match your search.' : 'No upcoming events found.' }}
+          </p>
         </div>
 
         <div v-else class="grid grid-cols-1 md:grid-cols-4 gap-6 p-10">

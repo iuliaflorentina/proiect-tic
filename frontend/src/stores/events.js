@@ -7,7 +7,12 @@ export const useEventsStore = defineStore('events', () => {
     const currentEvent = ref(null)
     const isLoading = ref(false)
     const error = ref(null)
+    const searchQuery = ref('')
     const authStore = useAuthStore()
+
+    function setSearchQuery(query) {
+        searchQuery.value = query
+    }
 
     async function fetchEvents() {
         isLoading.value = true
@@ -249,11 +254,13 @@ export const useEventsStore = defineStore('events', () => {
         currentEvent,
         isLoading,
         error,
+        searchQuery,
         fetchEvents,
         fetchEventById,
         updateEventTickets,
         addEvent,
         updateEvent,
-        deleteEvent
+        deleteEvent,
+        setSearchQuery
     }
 })

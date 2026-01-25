@@ -207,7 +207,7 @@ onMounted(() => {
                   </button>
                   <button @click="handleDelete(event.id)"
                     class="flex-1 py-3 text-xs font-black uppercase tracking-widest text-red-400 border border-red-400/20 rounded-xl hover:bg-red-400/10 transition-all cursor-pointer">
-                    Purge
+                    Delete
                   </button>
                 </div>
                 <button @click="$router.push(`/organizer/buyers/${event.id}`)"
@@ -335,7 +335,7 @@ onMounted(() => {
             <div class="pt-8 border-t border-border/50 flex flex-col sm:flex-row justify-end gap-4">
               <button type="button" @click="closeModal"
                 class="px-8 py-3 rounded-xl border border-border/50 text-white font-black uppercase tracking-widest text-xs hover:bg-white/5 transition-all cursor-pointer">
-                Abort
+                Cancel
               </button>
               <button type="submit" :disabled="eventsStore.isLoading"
                 class="group relative px-10 py-3 bg-primary text-primary-foreground overflow-hidden rounded-xl font-black uppercase tracking-widest text-xs shadow-2xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 cursor-pointer">
