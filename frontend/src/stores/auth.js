@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { jwtDecode } from 'jwt-decode'
 
 export const useAuthStore = defineStore('auth', () => {
     const user = ref(JSON.parse(localStorage.getItem('user')) || null)
@@ -12,35 +13,25 @@ export const useAuthStore = defineStore('auth', () => {
 
     const isAuthenticated = computed(() => {
         if (!token.value) return false
-        return !isTokenExpired(token.value)
+        try {
+            const decoded = jwtDecode(token.value)
+            const currentTime = Math.floor(Date.now() / 1000)
+            return decoded.exp > currentTime
+        } catch {
+            return false
+        }
     })
 
-    function isTokenExpired(token) {
-        if (!token) return true
+    if (token.value) {
         try {
-            const base64Url = token.split('.')[1]
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
-            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-            }).join(''))
-
-            const { exp } = JSON.parse(jsonPayload)
-            if (!exp) return false
-
+            const decoded = jwtDecode(token.value)
             const currentTime = Math.floor(Date.now() / 1000)
-            return exp < currentTime
-        } catch (e) {
-            console.error('Error decoding token:', e)
-            return true
+            if (decoded.exp <= currentTime) {
+                logout()
+            }
+        } catch {
+            logout()
         }
-    }
-
-    // Startup check
-    if (token.value && isTokenExpired(token.value)) {
-        user.value = null
-        token.value = null
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
     }
 
     async function login(email, password) {
@@ -223,13 +214,10 @@ export const useAuthStore = defineStore('auth', () => {
         error.value = null
         try {
             if (!user.value || !user.value.id) throw new Error('User not found')
-
-            // 1. Ensure we have the latest bought tickets
             await fetchBoughtTickets()
 
-            // 2. Create new ticket object
             const newTicket = {
-                id: Date.now().toString(), // Simple ID generation
+                id: Date.now().toString(),
                 eventId: ticketDetails.eventId,
                 eventTitle: ticketDetails.eventTitle,
                 ticketType: ticketDetails.ticketType,
@@ -238,11 +226,8 @@ export const useAuthStore = defineStore('auth', () => {
                 date: new Date().toISOString()
             }
 
-            // 3. Append to existing tickets
             const updatedTickets = [...boughtTickets.value, newTicket]
 
-            // 4. Update user profile with new tickets list
-            // Note: The backend updateUserData controller expects the fields to update in the body
             const response = await fetch(`/users/${user.value.id}`, {
                 method: 'PUT',
                 headers: {
@@ -264,9 +249,7 @@ export const useAuthStore = defineStore('auth', () => {
                 throw new Error(data.message || 'Purchase failed')
             }
 
-            // 5. Update local state
             boughtTickets.value = updatedTickets
-            // Also update user object if it contains boughtTickets
             user.value = { ...user.value, boughtTickets: updatedTickets }
             localStorage.setItem('user', JSON.stringify(user.value))
 
@@ -285,24 +268,18 @@ export const useAuthStore = defineStore('auth', () => {
         try {
             if (!user.value || !user.value.id) throw new Error('User not found')
 
-            // Extract eventId from first ticket (all tickets should be from same event)
             const eventId = ticketsArray[0]?.event?.eventId
             if (!eventId) throw new Error('Invalid ticket data')
 
-            // Import events store dynamically to avoid circular dependency
             const { useEventsStore } = await import('./events')
             const eventsStore = useEventsStore()
 
-            // 1. Update event ticket quantities FIRST (this validates availability)
             await eventsStore.updateEventTickets(eventId, ticketsArray)
 
-            // 2. Ensure we have the latest bought tickets
             await fetchBoughtTickets()
 
-            // 3. Append new tickets to existing ones
             const updatedTickets = [...boughtTickets.value, ...ticketsArray]
 
-            // 4. Update user profile with new tickets list
             const response = await fetch(`/users/${user.value.id}`, {
                 method: 'PUT',
                 headers: {
@@ -324,7 +301,6 @@ export const useAuthStore = defineStore('auth', () => {
                 throw new Error(data.message || 'Purchase failed')
             }
 
-            // 5. Update local state
             boughtTickets.value = updatedTickets
             user.value = { ...user.value, boughtTickets: updatedTickets }
             localStorage.setItem('user', JSON.stringify(user.value))

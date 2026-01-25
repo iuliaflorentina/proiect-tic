@@ -9,16 +9,6 @@ const eventsStore = useEventsStore()
 const router = useRouter()
 const searchQuery = ref('')
 
-const filteredEvents = computed(() => {
-  if (!searchQuery.value.trim()) {
-    return eventsStore.events
-  }
-  return eventsStore.events.filter(event =>
-    event.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-  )
-})
-
-// Emit the search query to parent
 const handleSearch = () => {
   eventsStore.setSearchQuery(searchQuery.value)
 }
@@ -46,7 +36,6 @@ const handleLogout = () => {
           </span>
         </RouterLink>
 
-        <!-- Search Bar -->
         <div class="relative flex items-center flex-1 sm:flex-none sm:w-48 md:w-64 lg:w-80 min-w-0">
           <input
             v-model="searchQuery"
