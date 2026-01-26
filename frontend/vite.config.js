@@ -24,6 +24,10 @@ export default defineConfig({
       '/events': {
         target: 'http://127.0.0.1:8080',
         changeOrigin: true,
+      },
+      '/payments': {
+        target: 'http://127.0.0.1:8080',
+        changeOrigin: true,
       }
     }
   }

@@ -333,15 +333,14 @@ async function handlePurchase() {
         }
     })
 
-    const success = await authStore.buyTickets(ticketsToPurchase)
-
-    if (success) {
+    const session = await authStore.createPaymentSession(ticketsToPurchase)
+    
+    if (session && session.url) {
         isSuccess.value = true
-        successMessage.value = `Successfully purchased ${purchasedCount} ticket${purchasedCount !== 1 ? 's' : ''}!`
-
+        successMessage.value = 'Redirecting to secure payment...'
         setTimeout(() => {
-            router.push('/profile')
-        }, 2000)
+            window.location.href = session.url
+        }, 1000)
     }
 }
 </script>

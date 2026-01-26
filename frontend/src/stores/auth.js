@@ -262,53 +262,38 @@ export const useAuthStore = defineStore('auth', () => {
         }
     }
 
-    async function buyTickets(ticketsArray) {
+    async function createPaymentSession(ticketsArray) {
         isLoading.value = true
         error.value = null
         try {
             if (!user.value || !user.value.id) throw new Error('User not found')
 
-            const eventId = ticketsArray[0]?.event?.eventId
-            if (!eventId) throw new Error('Invalid ticket data')
-
-            const { useEventsStore } = await import('./events')
-            const eventsStore = useEventsStore()
-
-            await eventsStore.updateEventTickets(eventId, ticketsArray)
-
-            await fetchBoughtTickets()
-
-            const updatedTickets = [...boughtTickets.value, ...ticketsArray]
-
-            const response = await fetch(`/users/${user.value.id}`, {
-                method: 'PUT',
+            const response = await fetch('/payments/create-checkout-session', {
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token.value}`
                 },
-                body: JSON.stringify({ boughtTickets: updatedTickets })
+                body: JSON.stringify({
+                    tickets: ticketsArray,
+                    userId: user.value.id
+                })
             })
 
             if (response.status === 401 || response.status === 403) {
                 alert('Session expired. Please login again.')
                 logout()
                 router.push('/login')
-                return false
+                return null
             }
 
-            if (!response.ok) {
-                const data = await response.json()
-                throw new Error(data.message || 'Purchase failed')
-            }
+            const data = await response.json()
+            if (!response.ok) throw new Error(data.message || 'Failed to create payment session')
 
-            boughtTickets.value = updatedTickets
-            user.value = { ...user.value, boughtTickets: updatedTickets }
-            localStorage.setItem('user', JSON.stringify(user.value))
-
-            return true
+            return data
         } catch (err) {
             error.value = err.message
-            return false
+            return null
         } finally {
             isLoading.value = false
         }
@@ -358,7 +343,7 @@ export const useAuthStore = defineStore('auth', () => {
         boughtTickets,
         fetchBoughtTickets,
         buyTicket,
-        buyTickets,
-        fetchBuyersByEvent
+        fetchBuyersByEvent,
+        createPaymentSession
     }
 })
